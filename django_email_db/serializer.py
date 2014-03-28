@@ -3,32 +3,52 @@
 
 from django.core.mail import get_connection
 from django.core.mail.message import EmailMessage
+from django.utils.importlib import import_module
 
 
-def serialize(email_message):
+def to_dict(email_message):
+    result = {}
+    for k in dir(email_message):
+        if not k[0] == '_':
+            att = getattr(email_message, k)
+            try:
+                result[k] = att
+            except TypeError:
+                pass
+    
+    result['attachments'] = email_message.attachments
 
-    return {
-        'subject': email_message.subject,
-        'body': email_message.body,
-        'from_email': email_message.from_email,
-        'to': email_message.to,
-        'bcc': email_message.bcc,
-        'attachments': email_message.attachments,
-        'headers': email_message.extra_headers,
-        'cc': email_message.cc,
-    }
+    return result
+    
 
+def from_dict(serialized):
 
-def unserialize(serialized):
+    serialized['connection'] = get_connection()    
+    
+    cls = EmailMessage
+    if 'message_type' in serialized:
+        module, klass = serialized['message_type'].split(':')
+        cls = getattr(
+            import_module(module),
+            klass)
+        del serialized['message_type']
 
-    return EmailMessage(
-        subject =serialized.get('subject', u''),
-        body =serialized.get('body', u''),
-        from_email =serialized.get('from_email'),
-        to = serialized.get('to'),
-        bcc = serialized.get('bcc'),
-        attachments = serialized.get('attachments'),
-        headers = serialized.get('headers'),
-        cc = serialized.get('cc'),
-        connection = get_connection(),
-    )
+    attachments = []
+    if 'attachments' in serialized:
+        attachments = serialized['attachments']
+        del serialized['attachments']
+
+    unknown_attrs = {}
+    if 'unknown_attrs' in serialized:
+        unknown_attrs = serialized['unknown_attrs']
+        del serialized['unknown_attrs']
+
+    result = cls(**serialized)
+
+    for k, v in unknown_attrs.iteritems():
+        setattr(result, k, v)
+
+    for a in attachments:
+        result.attachments.append(a.document)
+
+    return result

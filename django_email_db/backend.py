@@ -1,20 +1,24 @@
 from __future__ import absolute_import
 
-from django.core.mail.backends.base import BaseEmailBackend
+from django.core.mail.backends.smtp import EmailBackend
 from django.conf import settings
 
-from .models import EmailMessage
+from .models import Message
 
 import sys
 
 
-class DBBackend(BaseEmailBackend):
+class DBBackend(EmailBackend):
+    def send_messages_smtp(self, *args, **kwargs):
+        return super(
+            DBBackend, self
+        ).send_messages(*args, **kwargs)
+    
     def send_messages(self, email_messages):
         count = 0
         for message in email_messages:
             try:
-                entry = EmailMessage.from_message(message)
-                entry.save()
+                Message.save_from_message(message)
                 count += 1
             except:
                 if settings.DEBUG:
