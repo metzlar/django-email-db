@@ -29,6 +29,8 @@ class Message(models.Model):
     missed_attrs = models.TextField(null = True, blank = True)
     created = models.DateTimeField(auto_now_add = True)
     sent = models.DateTimeField(null = True)
+    # priority, 0 is average, >0 is hight prio, <0 is low prio
+    priority = models.IntegerField(default=0)
 
     def __unicode__(self):
         return unicode("%s:%s (%s) %s" % (

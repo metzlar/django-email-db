@@ -4,6 +4,7 @@ from django.core.mail import get_connection
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils.timezone import now
+from django.conf import settings
 
 from django_email_db.models import Message
 from django_email_db.serializer import from_dict
@@ -15,7 +16,9 @@ class Command(BaseCommand):
     def get_messages(self):
         messages = Message.objects.select_for_update().filter(
             sent__isnull = True
-        )
+        ).order_by('-priority')[
+            :settings.get('AMOUNT_EMAIL_PER_BATCH', 10)
+        ]
 
         result = [from_dict(m.serialized()) for m in messages]
 
