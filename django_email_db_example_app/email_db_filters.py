@@ -24,5 +24,5 @@ class PrioRandom(MessageFilter):
     '''
     def on_new_message(self, message):
         if message.priority == 0:
-            message.priority = randint(-sys.maxint-1, sys.maxint)
+            message.priority = randint(-1000, 1000)
         return message
