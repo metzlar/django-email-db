@@ -108,6 +108,11 @@ class Message(models.Model):
             message.__class__.__module__ + ':' +
             message.__class__.__name__
         )
+
+        # no circular import 
+        from .backend import MessageFilters
+        result = MessageFilters.new_message(result)
+        
         result.save()
 
         for a in attachments:
