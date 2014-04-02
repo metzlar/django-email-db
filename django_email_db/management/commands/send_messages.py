@@ -17,7 +17,7 @@ class Command(BaseCommand):
         messages = Message.objects.select_for_update().filter(
             sent__isnull = True
         ).order_by('-priority')[
-            :settings.get('AMOUNT_EMAIL_PER_BATCH', 10)
+            :getattr(settings,'AMOUNT_EMAIL_PER_BATCH', 10)
         ]
 
         result = [from_dict(m.serialized()) for m in messages]
