@@ -21,6 +21,7 @@ class Command(BaseCommand):
         ]]
 
         messages = Message.objects.select_for_update().filter(
+            sent__isnull = True,
             pk__in=messages
         )
         
