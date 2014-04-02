@@ -11,13 +11,24 @@ import sys
 
 
 class MessageFilters(object):
-    filters = None
+
+    _instance = None
+    
+    def __new__(cls, *args, **kwargs):
+        if not isinstance(cls._instance, cls):
+            cls._instance = object.__new__(cls, *args, **kwargs)
+            cls._instance._filters = None
+        return cls._instance
+    
+    def get_filters(self):
+        if self._filters is None:
+            self._filters = collect_filters()
+        return self._filters
+    filters = property(get_filters)
     
     @classmethod
     def new_message(cls, message):
-        if cls.filters is None:
-            cls.filters = collect_filters()
-        for filter in cls.filters:
+        for filter in cls().filters:
             message = filter.on_new_message(message)
         return message
 
