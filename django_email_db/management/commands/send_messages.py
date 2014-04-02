@@ -14,13 +14,20 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def get_messages(self):
-        messages = Message.objects.select_for_update().filter(
+        messages = [m.pk for m in Message.objects.filter(
             sent__isnull = True
         ).order_by('-priority')[
             :getattr(settings,'AMOUNT_EMAIL_PER_BATCH', 10)
-        ]
+        ]]
 
-        result = [from_dict(m.serialized()) for m in messages]
+        messages = Message.objects.select_for_update().filter(
+            pk__in=messages
+        )
+        
+        result = [
+            from_dict(m.serialized())
+            for m in messages
+        ]
 
         messages.update(sent = now())
 
