@@ -8,17 +8,12 @@ from .models import Message
 from .filter import MessageFilter
 
 import sys
+from std2.singleton import Singleton
 
 
-class MessageFilters(object):
+class MessageFilters(Singleton):
 
-    _instance = None
-    
-    def __new__(cls, *args, **kwargs):
-        if not isinstance(cls._instance, cls):
-            cls._instance = object.__new__(cls, *args, **kwargs)
-            cls._instance._filters = None
-        return cls._instance
+    _filters = None
     
     def get_filters(self):
         if self._filters is None:
@@ -28,8 +23,8 @@ class MessageFilters(object):
     
     @classmethod
     def new_message(cls, message):
-        for filter in cls().filters:
-            message = filter.on_new_message(message)
+        for f in cls().filters:
+            message = f.on_new_message(message)
         return message
 
         
