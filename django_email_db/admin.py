@@ -15,7 +15,17 @@ class MessageAttachmentInline(admin.TabularInline):
     
 class MessageAdmin(admin.ModelAdmin):
 
-    actions = ['re_send']
+    actions = ['re_send', 're_schedule']
+
+    @transaction.atomic
+    def re_schedule(self, request, queryset):
+        queryset.update(sent = None)
+        self.message_user(
+            request,
+            'Selected messages are scheduled to be resent.'
+        )
+        
+    re_schedule.short_description = '(Re-)schedule selected'
     
     @transaction.atomic
     def re_send(self, request, queryset):
@@ -36,4 +46,5 @@ class MessageAdmin(admin.ModelAdmin):
 
     list_display = ('to', 'subject', 'priority', 'sent')
 
+    
 admin.site.register(Message, MessageAdmin)
