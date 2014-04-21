@@ -44,7 +44,7 @@ class MessageAdmin(admin.ModelAdmin):
         MessageAttachmentInline,
     ]
 
-    list_display = ('to', 'subject', 'priority', 'sent')
+    list_display = ('created', 'to', 'subject', 'priority', 'sent')
 
     
 admin.site.register(Message, MessageAdmin)
