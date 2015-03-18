@@ -122,7 +122,10 @@ class Message(models.Model):
             ).save()
 
         return result
-    
+
+
+def attachment_upload_to(i, f):
+    return os.path.join('attachments', str(i.pk), f)
 
 class MessageAttachment(models.Model):
     message = models.ForeignKey(
@@ -131,5 +134,4 @@ class MessageAttachment(models.Model):
     )
     headers = models.TextField(null=True, blank=True)
     document = models.FileField(
-        upload_to=lambda instance, filename: os.path.join(
-            ['attachments', str(instance.pk), filename]))
+        upload_to=attachment_upload_to)
